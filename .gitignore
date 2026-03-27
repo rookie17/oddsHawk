@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environment variables (keep credentials safe — never commit this)
+.env
+
+# Logs
+logs/
+
+# Playwright browser cache
+.playwright/
