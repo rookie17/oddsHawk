@@ -1,7 +1,7 @@
 # config.py — All settings for OddsHawk in one place
 
 # The betting site we'll monitor
-SITE_URL = "https://example.com"  # we'll replace this with the real URL later
+SITE_URL = "https://play99exch.win/login"  # we'll replace this with the real URL later
 
 # The odds value we want to trigger on
 TARGET_ODDS = 2.50

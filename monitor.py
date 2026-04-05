@@ -7,11 +7,22 @@ from utils.logger import get_logger
 
 async def monitor_site(page: Page) -> None:
     log = get_logger("Monitor")
-    log.info(f"Monitor started. Will check odds every {config.POLL_INTERVAL_SECONDS} second(s).")
 
-    # We'll add real odds-reading logic here later
-    for i in range(3):
-        log.info(f"Checking odds... (check #{i + 1})")
-        await asyncio.sleep(config.POLL_INTERVAL_SECONDS)
+    await _login_demo(page, log)
 
-    log.info("Monitor finished.")
+    # We'll add odds reading here in the next milestone
+    log.info("Logged in. Monitoring will go here next.")
+
+async def _login_demo(page: Page, log) -> None:
+    log.info("Clicking 'Login with Demo ID'...")
+
+    # Playwright concept: `get_by_text()`
+    # Finds a button by its visible text. More readable than CSS selectors
+    # and resilient to class name changes.
+    await page.get_by_text("Login with Demo ID").click()
+
+    # Wait until the page finishes navigating after login.
+    # "networkidle" = no network requests for 500ms — means the page settled.
+    await page.wait_for_load_state("networkidle")
+
+    log.info("Login successful. Current URL: " + page.url)
