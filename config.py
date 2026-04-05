@@ -15,3 +15,16 @@ POLL_INTERVAL_SECONDS = 1.0 # How often to re-check odds (seconds)
 
 # ── Browser ───────────────────────────────────────────────────────────────────
 HEADLESS = False            # False = visible window (easier to debug login issues)
+
+IPL_TEAMS = [
+    "Sunrisers Hyderabad",
+    "Lucknow Super Giants",
+    "Royal Challengers Bengaluru",
+    "Chennai Super Kings",
+    "Mumbai Indians",
+    "Kolkata Knight Riders",
+    "Delhi Capitals",
+    "Rajasthan Royals",
+    "Punjab Kings",
+    "Gujarat Titans",
+]
