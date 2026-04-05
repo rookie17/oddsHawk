@@ -1,13 +1,17 @@
 # config.py — All settings for OddsHawk in one place
 
-# The betting site we'll monitor
-SITE_URL = "https://play99exch.win/login"  # we'll replace this with the real URL later
+# ── Site ──────────────────────────────────────────────────────────────────────
+SITE_URL = "https://play99exch.win/login"
 
-# The odds value we want to trigger on
-TARGET_ODDS = 2.50
+# ── Credentials ───────────────────────────────────────────────────────────────
+# ⚠️  Never commit real credentials to git. This is fine for local dev.
+#     Later we'll move these to a .env file and load with python-dotenv.
+USERNAME = "99aaditya4244"
+PASSWORD = "Play99Aadi*17"
 
-# How often to check the odds (in seconds)
-POLL_INTERVAL_SECONDS = 1.0
+# ── Odds logic ────────────────────────────────────────────────────────────────
+TARGET_ODDS = 2.50          # Trigger bet when odds hit this value
+POLL_INTERVAL_SECONDS = 1.0 # How often to re-check odds (seconds)
 
-# Show the browser window while running (True = visible, False = hidden)
-HEADLESS = False
+# ── Browser ───────────────────────────────────────────────────────────────────
+HEADLESS = False            # False = visible window (easier to debug login issues)

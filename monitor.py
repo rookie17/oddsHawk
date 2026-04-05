@@ -1,28 +1,39 @@
-# monitor.py — Odds monitor for one site
-
-import asyncio
 from playwright.async_api import Page
 import config
 from utils.logger import get_logger
 
+log = get_logger("Monitor")
+
+
 async def monitor_site(page: Page) -> None:
-    log = get_logger("Monitor")
+    await _login(page)
+    log.info("Login complete. Odds monitoring will be wired up next.")
 
-    await _login_demo(page, log)
 
-    # We'll add odds reading here in the next milestone
-    log.info("Logged in. Monitoring will go here next.")
+async def _login(page: Page) -> None:
+    log.info("Starting login sequence...")
 
-async def _login_demo(page: Page, log) -> None:
-    log.info("Clicking 'Login with Demo ID'...")
+    username_field = page.locator('input[name="User Name"]')
+    await username_field.wait_for(state="visible")
+    log.info("Login form is visible.")
 
-    # Playwright concept: `get_by_text()`
-    # Finds a button by its visible text. More readable than CSS selectors
-    # and resilient to class name changes.
-    await page.get_by_text("Login with Demo ID").click()
+    await username_field.fill(config.USERNAME)
+    log.info("Username entered.")
 
-    # Wait until the page finishes navigating after login.
-    # "networkidle" = no network requests for 500ms — means the page settled.
-    await page.wait_for_load_state("networkidle")
+    password_field = page.locator('input[name="Password"]')
+    await password_field.fill(config.PASSWORD)
+    log.info("Password entered.")
 
-    log.info("Login successful. Current URL: " + page.url)
+    submit_button = page.locator('button[type="submit"].btn-login')
+    await submit_button.click()
+    log.info("Login button clicked. Waiting for redirect...")
+
+    try:
+        await page.wait_for_url("**/home**", timeout=10_000)
+        log.info(f"✅ Login successful. Landed on: {page.url}")
+    except Exception:
+        log.error(
+            f"❌ Login failed — still on: {page.url}\n"
+            "Possible causes: wrong credentials, OTP prompt, CAPTCHA, or slow network."
+        )
+        raise
