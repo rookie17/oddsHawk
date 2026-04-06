@@ -2,6 +2,7 @@ from playwright.async_api import Page
 import asyncio
 import config
 from utils.logger import get_logger
+from actions import place_bet
 
 log = get_logger("Monitor")
 
@@ -70,8 +71,6 @@ async def _navigate_to_ipl_match(page: Page) -> None:
 async def _monitor_odds(page: Page) -> None:
     log.info(f"Starting odds monitor. Target back odd: {config.TARGET_ODDS}")
 
-    # Find the .table-body that contains .back.lock — this is always the match odds block.
-    # Fancy and bookmaker sections never have .back.lock elements.
     match_odds_table = page.locator(".table-body", has=page.locator(".back.lock")).first
 
     team1_row = match_odds_table.locator(".table-row").nth(0)
@@ -83,6 +82,9 @@ async def _monitor_odds(page: Page) -> None:
 
     team1_odd_locator = team1_row.locator(".back.lock .odd")
     team2_odd_locator = team2_row.locator(".back.lock .odd")
+
+    team1_bet_placed = False
+    team2_bet_placed = False
 
     while True:
         try:
@@ -99,13 +101,23 @@ async def _monitor_odds(page: Page) -> None:
 
             log.info(f"{team1_name}: {team1_odd} | {team2_name}: {team2_odd} | Target: {config.TARGET_ODDS}")
 
-            if team1_odd >= config.TARGET_ODDS:
-                log.info(f"TARGET HIT — {team1_name} back odd {team1_odd} >= {config.TARGET_ODDS}")
-
-            if team2_odd >= config.TARGET_ODDS:
-                log.info(f"TARGET HIT — {team2_name} back odd {team2_odd} >= {config.TARGET_ODDS}")
-
         except Exception as e:
             log.warning(f"Error reading odds: {e}. Retrying...")
+            await asyncio.sleep(config.POLL_INTERVAL_SECONDS)
+            continue
+
+        if not team1_bet_placed and team1_odd >= config.TARGET_ODDS:
+            log.info(f"TARGET HIT — {team1_name} back odd {team1_odd} >= {config.TARGET_ODDS}")
+            await place_bet(page, team1_row)
+            team1_bet_placed = True
+
+        if not team2_bet_placed and team2_odd >= config.TARGET_ODDS:
+            log.info(f"TARGET HIT — {team2_name} back odd {team2_odd} >= {config.TARGET_ODDS}")
+            await place_bet(page, team2_row)
+            team2_bet_placed = True
+
+        if team1_bet_placed and team2_bet_placed:
+            log.info("Both bets placed. Monitoring complete.")
+            return
 
         await asyncio.sleep(config.POLL_INTERVAL_SECONDS)

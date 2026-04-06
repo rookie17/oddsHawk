@@ -1,20 +1,17 @@
-# config.py — All settings for OddsHawk in one place
+from dotenv import load_dotenv
+import os
 
-# ── Site ──────────────────────────────────────────────────────────────────────
+load_dotenv()
+
 SITE_URL = "https://play99exch.win/login"
 
-# ── Credentials ───────────────────────────────────────────────────────────────
-# ⚠️  Never commit real credentials to git. This is fine for local dev.
-#     Later we'll move these to a .env file and load with python-dotenv.
-USERNAME = "99aaditya4244"
-PASSWORD = "Play99Aadi*17"
+USERNAME = os.getenv("USERNAME")
+PASSWORD = os.getenv("PASSWORD")
 
-# ── Odds logic ────────────────────────────────────────────────────────────────
-TARGET_ODDS = 2.12          # Trigger bet when odds hit this value
-POLL_INTERVAL_SECONDS = 1.0 # How often to re-check odds (seconds)
-
-# ── Browser ───────────────────────────────────────────────────────────────────
-HEADLESS = False            # False = visible window (easier to debug login issues)
+TARGET_ODDS = 2.50
+POLL_INTERVAL_SECONDS = 1.0
+HEADLESS = False
+BET_STAKE = 100
 
 IPL_TEAMS = [
     "Sunrisers Hyderabad",
