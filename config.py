@@ -10,7 +10,7 @@ USERNAME = "99aaditya4244"
 PASSWORD = "Play99Aadi*17"
 
 # ── Odds logic ────────────────────────────────────────────────────────────────
-TARGET_ODDS = 2.50          # Trigger bet when odds hit this value
+TARGET_ODDS = 2.12          # Trigger bet when odds hit this value
 POLL_INTERVAL_SECONDS = 1.0 # How often to re-check odds (seconds)
 
 # ── Browser ───────────────────────────────────────────────────────────────────
