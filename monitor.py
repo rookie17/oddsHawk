@@ -2,18 +2,16 @@ from playwright.async_api import Page
 import asyncio
 import config
 from utils.logger import get_logger
-from actions import place_bet
 
 log = get_logger("Monitor")
 
 
 async def monitor_site(page: Page) -> None:
-    await _login(page)
-    await _navigate_to_ipl_match(page)
-    await _monitor_odds(page)
+    await login(page)
+    await navigate_to_ipl_match(page)
 
 
-async def _login(page: Page) -> None:
+async def login(page: Page) -> None:
     log.info("Starting login sequence...")
 
     username_field = page.locator('input[name="User Name"]')
@@ -38,7 +36,8 @@ async def _login(page: Page) -> None:
         log.error(f"Login failed — still on: {page.url}")
         raise
 
-async def _navigate_to_ipl_match(page: Page) -> None:
+
+async def navigate_to_ipl_match(page: Page) -> None:
     log.info("Scanning home page for IPL matches...")
 
     all_match_links = page.locator("table.coupon-table tbody tr a.text-dark")
@@ -66,64 +65,3 @@ async def _navigate_to_ipl_match(page: Page) -> None:
                 return
 
     log.warning("No IPL match found on the home page today.")
-
-
-async def _monitor_odds(page: Page) -> None:
-    log.info(f"Starting odds monitor. Target back odd: {config.TARGET_ODDS}")
-
-    match_odds_table = page.locator(".table-body", has=page.locator(".back.lock")).first
-
-    team1_row = match_odds_table.locator(".table-row").nth(0)
-    team2_row = match_odds_table.locator(".table-row").nth(1)
-
-    team1_name = (await team1_row.locator(".team-name b").first.inner_text()).strip()
-    team2_name = (await team2_row.locator(".team-name b").first.inner_text()).strip()
-    log.info(f"Monitoring: [{team1_name}] vs [{team2_name}]")
-
-    team1_odd_locator = team1_row.locator(".back.lock .odd")
-    team2_odd_locator = team2_row.locator(".back.lock .odd")
-
-    team1_bet_placed = False
-    team2_bet_placed = False
-
-    while True:
-        try:
-            team1_text = (await team1_odd_locator.inner_text()).strip()
-            team2_text = (await team2_odd_locator.inner_text()).strip()
-
-            if team1_text == "-" or team2_text == "-":
-                log.info("Market suspended. Waiting...")
-                await asyncio.sleep(config.POLL_INTERVAL_SECONDS)
-                continue
-
-            team1_odd = float(team1_text)
-            team2_odd = float(team2_text)
-
-            log.info(f"{team1_name}: {team1_odd} | {team2_name}: {team2_odd} | Target: {config.TARGET_ODDS}")
-
-        except Exception as e:
-            log.warning(f"Error reading odds: {e}. Retrying...")
-            await asyncio.sleep(config.POLL_INTERVAL_SECONDS)
-            continue
-
-        if not team1_bet_placed and team1_odd >= config.TARGET_ODDS:
-            log.info(f"TARGET HIT — {team1_name} back odd {team1_odd} >= {config.TARGET_ODDS}")
-            try:
-                await place_bet(page, team1_row)
-                team1_bet_placed = True
-            except RuntimeError as e:
-                log.warning(f"Team 1 bet failed: {e}. Will retry on next qualifying odd.")
-
-        if not team2_bet_placed and team2_odd >= config.TARGET_ODDS:
-            log.info(f"TARGET HIT — {team2_name} back odd {team2_odd} >= {config.TARGET_ODDS}")
-            try:
-                await place_bet(page, team2_row)
-                team2_bet_placed = True
-            except RuntimeError as e:
-                log.warning(f"Team 2 bet failed: {e}. Will retry on next qualifying odd.")
-
-        if team1_bet_placed and team2_bet_placed:
-            log.info("Both bets placed. Monitoring complete.")
-            return
-
-        await asyncio.sleep(config.POLL_INTERVAL_SECONDS)
