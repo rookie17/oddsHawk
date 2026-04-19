@@ -8,7 +8,7 @@ SITE_URL = "https://play99exch.win/login"
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 
-TARGET_ODDS = 2.50
+TARGET_ODDS = 20
 POLL_INTERVAL_SECONDS = 1.0
 HEADLESS = False
 BET_STAKE = 100

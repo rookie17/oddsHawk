@@ -30,7 +30,31 @@ async def place_bet(page: Page, team_row) -> None:
         await asyncio.sleep(0.5)
 
     await submit_button.click()
-    log.info("Bet submitted.")
+    log.info("Submit clicked. Waiting for outcome...")
 
-    await bet_panel.wait_for(state="hidden", timeout=10_000)
-    log.info("Bet panel closed.")
+    await _check_bet_outcome(page)
+
+async def _check_bet_outcome(page: Page) -> None:
+    success_toast = page.locator(".toast-success")
+    error_toast = page.locator(".toast-error")
+
+    for _ in range(20):
+        await asyncio.sleep(0.25)
+
+        if await success_toast.count() > 0:
+            try:
+                message = (await success_toast.locator(".toast-message").inner_text(timeout=1_000)).strip()
+            except Exception:
+                message = "Bet placed"
+            log.info(f"Bet confirmed: '{message}'")
+            return
+
+        if await error_toast.count() > 0:
+            try:
+                message = (await error_toast.locator(".toast-message").inner_text(timeout=1_000)).strip()
+            except Exception:
+                message = "Unknown error"
+            log.error(f"Bet rejected: '{message}'")
+            raise RuntimeError(f"Bet rejected: {message}")
+
+    raise RuntimeError("Bet outcome timeout — no toast appeared within 5 seconds.")

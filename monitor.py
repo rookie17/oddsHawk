@@ -108,13 +108,19 @@ async def _monitor_odds(page: Page) -> None:
 
         if not team1_bet_placed and team1_odd >= config.TARGET_ODDS:
             log.info(f"TARGET HIT — {team1_name} back odd {team1_odd} >= {config.TARGET_ODDS}")
-            await place_bet(page, team1_row)
-            team1_bet_placed = True
+            try:
+                await place_bet(page, team1_row)
+                team1_bet_placed = True
+            except RuntimeError as e:
+                log.warning(f"Team 1 bet failed: {e}. Will retry on next qualifying odd.")
 
         if not team2_bet_placed and team2_odd >= config.TARGET_ODDS:
             log.info(f"TARGET HIT — {team2_name} back odd {team2_odd} >= {config.TARGET_ODDS}")
-            await place_bet(page, team2_row)
-            team2_bet_placed = True
+            try:
+                await place_bet(page, team2_row)
+                team2_bet_placed = True
+            except RuntimeError as e:
+                log.warning(f"Team 2 bet failed: {e}. Will retry on next qualifying odd.")
 
         if team1_bet_placed and team2_bet_placed:
             log.info("Both bets placed. Monitoring complete.")
