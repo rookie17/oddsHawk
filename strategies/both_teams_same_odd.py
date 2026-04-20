@@ -49,19 +49,19 @@ async def run(page: Page, params: dict) -> None:
 
         if not team1_bet_placed and team1_odd >= target_odds:
             log.info(f"TARGET HIT — {team1_name} back odd {team1_odd} >= {target_odds}")
+            team1_bet_placed = True  # lock immediately — unknown outcome is still "placed"
             try:
                 await place_bet(page, team1_row, bet_stake)
-                team1_bet_placed = True
             except RuntimeError as e:
-                log.warning(f"Team 1 bet failed: {e}. Will retry on next qualifying odd.")
+                log.warning(f"Team 1 bet outcome uncertain: {e}. Flag locked to prevent double bet.")
 
         if not team2_bet_placed and team2_odd >= target_odds:
             log.info(f"TARGET HIT — {team2_name} back odd {team2_odd} >= {target_odds}")
+            team2_bet_placed = True
             try:
                 await place_bet(page, team2_row, bet_stake)
-                team2_bet_placed = True
             except RuntimeError as e:
-                log.warning(f"Team 2 bet failed: {e}. Will retry on next qualifying odd.")
+                log.warning(f"Team 2 bet outcome uncertain: {e}. Flag locked to prevent double bet.")
 
         if team1_bet_placed and team2_bet_placed:
             log.info("Both bets placed. Monitoring complete.")
