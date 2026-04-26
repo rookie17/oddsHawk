@@ -65,3 +65,37 @@ async def navigate_to_ipl_match(page: Page) -> None:
                 return
 
     log.warning("No IPL match found on the home page today.")
+
+
+async def navigate_to_any_match(page: Page, team_name: str) -> None:
+    """
+    Scans the home page for the first match containing team_name (case-insensitive).
+    Used by strategies that are not IPL-specific.
+    Skips virtual/esports matches the same way navigate_to_ipl_match does.
+    """
+    log.info(f"Scanning home page for match with team: '{team_name}'...")
+
+    all_match_links = page.locator("table.coupon-table tbody tr a.text-dark")
+    await all_match_links.first.wait_for(state="visible")
+
+    count = await all_match_links.count()
+    log.info(f"Found {count} total matches on home page.")
+
+    for i in range(count):
+        link = all_match_links.nth(i)
+        text = (await link.inner_text()).strip()
+
+        parent_row = link.locator("xpath=ancestor::tr")
+        is_virtual = await parent_row.locator("img.cardgame-icon").count() > 0
+        if is_virtual:
+            continue
+
+        if team_name.lower() in text.lower():
+            log.info(f"Match found: '{text}'")
+            await link.click()
+            await page.wait_for_load_state("domcontentloaded")
+            await page.locator(".back.lock").first.wait_for(state="visible", timeout=30_000)
+            log.info(f"Navigated to match page: {page.url}")
+            return
+
+    raise RuntimeError(f"No match found containing team name: '{team_name}'")
