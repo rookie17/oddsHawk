@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .btn { padding: 6px 12px; cursor: pointer; margin: 4px; }
+    .btn-success { background: green; color: white; border: none; }
+    .btn-danger { background: red; color: white; border: none; }
+    .btn-secondary { background: #aaa; color: white; border: none; }
+    .coupon-table { border-collapse: collapse; width: 100%; }
+    .coupon-table td, .coupon-table th { border: 1px solid #ccc; padding: 8px; }
+    .card { border: 1px solid #ccc; margin: 10px 0; padding: 10px; }
+    .card.my-bet { background: #f9f9f9; }
+    .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px;
+             color: white; border-radius: 4px; display: none; z-index: 999; }
+    .toast-success { background: #28a745; }
+    .toast-error   { background: #dc3545; }
+    .toast-message { font-size: 14px; }
+    .float-right { float: right; }
+    .text-green { color: green; }
+  </style>
+</head>
+<body>
+
+  <h3>Mock Match Page</h3>
+
+  <!-- Cashout amount span inside team row (mirrors live DOM) -->
+  <div class="table-body">
+    <div class="table-row">
+      <div class="float-left country-name box-4">
+        <span class="team-name"><b>Chennai Super Kings</b></span>
+        <p>
+          <span class="float-left text-green">138</span>
+          <span id="cashout-amount" class="float-right text-green" style="display:none;"> 56.84 </span>
+        </p>
+      </div>
+      <div class="back box-1 float-left lock text-center">
+        <span class="odd d-block">2.10</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cashout button -->
+  <div class="btn-group" style="margin: 16px 0;">
+    <button id="cashout-btn" class="btn btn_cashout">Cashout</button>
+  </div>
+
+  <!-- Cashout panel (hidden until cashout clicked) -->
+  <div id="cashout-panel" style="display:none;">
+    <div class="card">
+      <div class="card-header"><h6>Place Bet</h6></div>
+      <table class="coupon-table">
+        <thead><tr><th></th><th>(Bet for)</th><th>Odds</th><th>Stake</th><th>Profit</th></tr></thead>
+        <tbody>
+          <tr>
+            <td></td>
+            <td>Chennai Super Kings - EVEN</td>
+            <td class="bet-odds"><input value="2.10" readonly style="width:45px;"></td>
+            <td class="bet-stakes"><input type="number" value="100"></td>
+            <td class="text-right bet-profit">110</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:8px;">
+        <button id="reset-btn" type="button" class="btn btn-sm btn-danger float-left">Reset</button>
+        <button id="submit-btn" type="button" class="btn btn-sm btn-success float-right">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Bet panel -->
+  <div class="card my-bet">
+    <div class="card-header"><h6>My Bet</h6></div>
+    <div class="card-body">
+      <table class="coupon-table">
+        <thead><tr><th>Nation</th><th>Odds</th><th>Stake</th></tr></thead>
+        <tbody id="my-bet-body">
+          <tr class="back">
+            <td>Chennai Super Kings</td>
+            <td>2.10</td>
+            <td>100.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Controls to simulate different outcomes -->
+  <div style="margin-top: 20px; border-top: 2px dashed #ccc; padding-top: 10px;">
+    <b>Simulate outcome after Submit:</b><br>
+    <label><input type="radio" name="outcome" value="success" checked> Success toast</label> &nbsp;
+    <label><input type="radio" name="outcome" value="error"> Error toast</label> &nbsp;
+    <label><input type="radio" name="outcome" value="silent"> Silent close (no toast)</label>
+  </div>
+
+  <!-- Toasts -->
+  <div id="toast-success" class="toast toast-success">
+    <span class="toast-message">Cashout successful!</span>
+  </div>
+  <div id="toast-error" class="toast toast-error">
+    <span class="toast-message">Cashout failed. Please try again.</span>
+  </div>
+
+  <script>
+    const cashoutBtn  = document.getElementById("cashout-btn");
+    const resetBtn    = document.getElementById("reset-btn");
+    const submitBtn   = document.getElementById("submit-btn");
+    const panel       = document.getElementById("cashout-panel");
+    const amountSpan  = document.getElementById("cashout-amount");
+    const myBetBody   = document.getElementById("my-bet-body");
+
+    function getOutcome() {
+      return document.querySelector('input[name="outcome"]:checked').value;
+    }
+
+    function showToast(id, durationMs = 3000) {
+      const el = document.getElementById(id);
+      el.style.display = "block";
+      setTimeout(() => el.style.display = "none", durationMs);
+    }
+
+    cashoutBtn.addEventListener("click", () => {
+      panel.style.display = "block";
+      amountSpan.style.display = "inline";
+    });
+
+    resetBtn.addEventListener("click", () => {
+      panel.style.display = "none";
+      amountSpan.style.display = "none";
+    });
+
+    submitBtn.addEventListener("click", () => {
+      const outcome = getOutcome();
+      panel.style.display = "none";
+      amountSpan.style.display = "none";
+
+      if (outcome === "success") {
+        myBetBody.innerHTML = "";           // clear My Bet panel
+        setTimeout(() => showToast("toast-success"), 300);
+      } else if (outcome === "error") {
+        setTimeout(() => showToast("toast-error"), 300);
+      }
+      // "silent" — nothing happens, panel just closed
+    });
+  </script>
+</body>
+</html>
